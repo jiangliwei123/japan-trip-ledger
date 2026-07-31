@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>日本旅行 · 旅行记账</title>
+<style>
+  :root{
+    --red:#E60012; --ink:#1B2A4A; --paper:#F7F5F2; --gold:#C8A35B;
+    --green:#1B7A3D; --muted:#8A8A8A; --card:#FFFFFF; --line:#ECE6DC;
+    --shadow:0 6px 20px rgba(27,42,74,.08);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:480px;margin:0 auto;padding:0 14px 90px;}
+
+  /* 顶部 */
+  header{
+    position:sticky;top:0;z-index:20;background:linear-gradient(135deg,var(--ink),#2c3e60);
+    color:#fff;padding:16px 14px 14px;box-shadow:var(--shadow);
+  }
+  .head-row{display:flex;align-items:center;justify-content:space-between;max-width:480px;margin:0 auto;}
+  .title{font-size:18px;font-weight:700;letter-spacing:.5px;}
+  .title small{display:block;font-size:11px;font-weight:400;opacity:.7;margin-top:2px;}
+  .toggle{display:flex;background:rgba(255,255,255,.15);border-radius:20px;padding:3px;}
+  .toggle button{
+    border:0;background:transparent;color:#fff;font-size:13px;font-weight:600;
+    padding:6px 14px;border-radius:17px;cursor:pointer;transition:.2s;
+  }
+  .toggle button.on{background:#fff;color:var(--ink);}
+
+  /* 总支出卡片 */
+  .hero{margin:16px 0;background:var(--card);border-radius:18px;padding:18px;box-shadow:var(--shadow);}
+  .hero .lbl{font-size:12px;color:var(--muted);}
+  .hero .big{font-size:34px;font-weight:800;margin:4px 0 2px;}
+  .hero .sub{font-size:12px;color:var(--muted);}
+
+  /* 成员对比 */
+  .members{display:flex;gap:12px;margin:14px 0;}
+  .mcard{flex:1;background:var(--card);border-radius:16px;padding:14px;box-shadow:var(--shadow);position:relative;overflow:hidden;}
+  .mcard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;}
+  .mcard.a::before{background:var(--red);}
+  .mcard.b::before{background:var(--ink);}
+  .mname{font-size:14px;font-weight:700;}
+  .mname.a{color:var(--red);}
+  .mname.b{color:var(--ink);}
+  .mrow{display:flex;justify-content:space-between;font-size:12px;margin-top:10px;color:var(--muted);}
+  .mrow b{color:var(--ink);font-size:15px;font-weight:700;}
+  .mrow .paid b{color:var(--red);}
+
+  /* 区块标题 */
+  .sec-title{font-size:14px;font-weight:700;margin:22px 4px 10px;display:flex;align-items:center;gap:6px;}
+  .sec-title::before{content:"";width:4px;height:14px;background:var(--gold);border-radius:2px;}
+
+  /* 类别圆环 */
+  .cat{background:var(--card);border-radius:16px;padding:16px;box-shadow:var(--shadow);display:flex;align-items:center;gap:16px;}
+  .donut{width:120px;height:120px;border-radius:50%;flex:none;position:relative;}
+  .donut::after{content:"";position:absolute;inset:26px;background:var(--card);border-radius:50%;}
+  .donut .ctr{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:2;}
+  .donut .ctr small{font-size:10px;color:var(--muted);}
+  .donut .ctr b{font-size:15px;}
+  .legend{flex:1;font-size:12px;}
+  .legend div{display:flex;align-items:center;justify-content:space-between;margin:5px 0;}
+  .legend .dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:6px;}
+  .legend .nm{display:flex;align-items:center;color:var(--ink);}
+  .legend .vl{color:var(--muted);}
+
+  /* 明细 */
+  .tx{background:var(--card);border-radius:14px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:12px;}
+  .tx .day{padding:10px 14px;background:var(--paper);font-size:12px;font-weight:600;color:var(--ink);border-bottom:1px solid var(--line);}
+  .tx .item{display:flex;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line);}
+  .tx .item:last-child{border-bottom:0;}
+  .tx .ic{width:38px;height:38px;border-radius:11px;background:var(--paper);display:flex;align-items:center;justify-content:center;font-size:18px;flex:none;margin-right:11px;}
+  .tx .mid{flex:1;min-width:0;}
+  .tx .nm{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .tx .meta{font-size:11px;color:var(--muted);margin-top:2px;}
+  .tag{font-size:10px;padding:1px 7px;border-radius:9px;margin-left:6px;font-weight:600;}
+  .tag.aa{background:#e6f4ea;color:var(--green);}
+  .tag.solo{background:#fdeaea;color:var(--red);}
+  .tx .amt{text-align:right;flex:none;margin-left:8px;}
+  .tx .amt b{font-size:15px;}
+  .tx .amt .who{font-size:10px;color:var(--muted);}
+
+  /* 成员筛选 */
+  .filter{display:flex;gap:8px;margin:0 4px 12px;}
+  .filter button{flex:1;padding:9px 0;border:1px solid var(--line);background:#fff;border-radius:11px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;transition:.15s;}
+  .filter button.on{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .filter button.mA.on{background:var(--red);border-color:var(--red);}
+  .filter button.mB.on{background:var(--ink);border-color:var(--ink);}
+  .txcap{display:flex;justify-content:space-between;align-items:center;background:#fff7ec;border:1px solid var(--gold);border-radius:12px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:var(--muted);}
+  .txcap b{color:var(--ink);font-size:15px;font-weight:700;}
+
+  /* 结算 */
+  .settle{background:linear-gradient(135deg,#fff,#fff7ec);border:1px solid var(--gold);border-radius:16px;padding:16px;box-shadow:var(--shadow);}
+  .settle .st{font-size:12px;color:var(--muted);}
+  .settle .big{font-size:22px;font-weight:800;margin:6px 0;}
+  .settle .arrow{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:8px;font-size:14px;}
+  .settle .pill{padding:6px 14px;border-radius:20px;font-weight:700;color:#fff;}
+  .settle .pill.from{background:var(--red);}
+  .settle .pill.to{background:var(--ink);}
+  .settle .ok{color:var(--green);font-size:16px;font-weight:700;text-align:center;padding:8px;}
+
+  /* 添加按钮 + 表单 */
+  .fab{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;z-index:30;
+    background:var(--red);color:#fff;border:0;border-radius:26px;padding:13px 26px;font-size:15px;font-weight:700;
+    box-shadow:0 8px 22px rgba(230,0,18,.35);cursor:pointer;}
+  .mask{position:fixed;inset:0;background:rgba(27,42,74,.45);z-index:40;display:none;align-items:flex-end;}
+  .mask.show{display:flex;}
+  .sheet{background:var(--paper);width:100%;max-width:480px;margin:0 auto;border-radius:20px 20px 0 0;padding:20px 18px 26px;animation:up .25s ease;}
+  @keyframes up{from{transform:translateY(100%)}to{transform:translateY(0)}}
+  .sheet h3{margin:0 0 14px;font-size:16px;}
+  .field{margin-bottom:12px;}
+  .field label{font-size:12px;color:var(--muted);display:block;margin-bottom:5px;}
+  .field input,.field select{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;font-size:14px;background:#fff;color:var(--ink);}
+  .seg{display:flex;gap:8px;}
+  .seg button{flex:1;padding:10px;border:1px solid var(--line);background:#fff;border-radius:10px;font-size:13px;font-weight:600;color:var(--muted);}
+  .seg button.on{border-color:var(--red);color:var(--red);background:#fff0f0;}
+  .sheet .acts{display:flex;gap:10px;margin-top:6px;}
+  .sheet .acts button{flex:1;padding:13px;border:0;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;}
+  .btn-add{background:var(--red);color:#fff;}
+  .btn-cancel{background:#fff;color:var(--ink);border:1px solid var(--line)!important;}
+  .note{font-size:11px;color:var(--muted);margin-top:10px;line-height:1.5;}
+  .empty{text-align:center;color:var(--muted);font-size:13px;padding:30px 0;}
+</style>
+</head>
+<body>
+<header>
+  <div class="head-row">
+    <div class="title">日本旅行<small>双人旅行记账 · AA 结算</small></div>
+    <div class="toggle">
+      <button id="btnCny" class="on" onclick="setCur('cny')">元</button>
+      <button id="btnJpy" onclick="setCur('jpy')">日元</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="lbl">总支出</div>
+    <div class="big" id="totalAmt">—</div>
+    <div class="sub" id="totalSub">—</div>
+  </div>
+
+  <div class="members">
+    <div class="mcard a">
+      <div class="mname a" id="nameA">姜</div>
+      <div class="mrow paid"><span>实际支出</span><b id="aPaid">—</b></div>
+      <div class="mrow"><span>消费</span><b id="aCons">—</b></div>
+    </div>
+    <div class="mcard b">
+      <div class="mname b" id="nameB">张</div>
+      <div class="mrow paid"><span>实际支出</span><b id="bPaid">—</b></div>
+      <div class="mrow"><span>消费</span><b id="bCons">—</b></div>
+    </div>
+  </div>
+
+  <div class="sec-title">支出构成</div>
+  <div class="cat">
+    <div class="donut" id="donut"><div class="ctr"><small>总支出</small><b id="donutTotal">—</b></div></div>
+    <div class="legend" id="legend"></div>
+  </div>
+
+  <div class="sec-title">消费明细</div>
+  <div class="filter" id="memFilter">
+    <button class="on" data-v="all" onclick="setFilter(this)">全部</button>
+    <button class="mA" data-v="姜" onclick="setFilter(this)">姜</button>
+    <button class="mB" data-v="张" onclick="setFilter(this)">张</button>
+  </div>
+  <div id="txList"></div>
+
+  <div class="sec-title">AA 制结算</div>
+  <div class="settle" id="settle"></div>
+
+  <div class="note" id="rateNote"></div>
+</div>
+
+<button class="fab" onclick="openSheet()">＋ 记一笔</button>
+<div class="mask" id="mask" onclick="if(event.target===this)closeSheet()">
+  <div class="sheet">
+    <h3>记录一笔消费</h3>
+    <div class="field">
+      <label>付款人</label>
+      <div class="seg" id="payerSeg">
+        <button type="button" data-v="姜" class="on" onclick="seg(this,'payer')">姜</button>
+        <button type="button" data-v="张" onclick="seg(this,'payer')">张</button>
+      </div>
+    </div>
+    <div class="field"><label>消费项目</label><input id="fItem" placeholder="如：酒店 / 晚餐 / 门票"></div>
+    <div class="field"><label>类别</label>
+      <select id="fCat">
+        <option>交通</option><option>住宿</option><option>餐饮</option><option>门票</option>
+        <option>购物</option><option>签证</option><option>通讯</option><option>其他</option>
+      </select>
+    </div>
+    <div class="field"><label>金额（元）</label><input id="fAmt" type="number" inputmode="decimal" placeholder="0.00"></div>
+    <div class="field">
+      <label>分摊方式</label>
+      <div class="seg" id="shareSeg">
+        <button type="button" data-v="aa" class="on" onclick="seg(this,'share')">AA 平分</button>
+        <button type="button" data-v="solo" onclick="seg(this,'share')">单人承担</button>
+      </div>
+    </div>
+    <div class="field"><label>日期</label><input id="fDate" type="date"></div>
+    <div class="acts">
+      <button class="btn-cancel" onclick="closeSheet()">取消</button>
+      <button class="btn-add" onclick="addTx()">保存</button>
+    </div>
+    <div class="note">提示：本表单便于临时记录并保存在本机。正式账目以「姜」告知记账助手为准，助手会同步更新 Excel 与网页。点「重置官方账目」可清除本机临时记录。</div>
+    <div class="acts" style="margin-top:8px;">
+      <button class="btn-cancel" style="flex:1" onclick="resetLocal()">重置官方账目</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const DATA = {"meta": {"trip": "日本旅行", "members": ["姜", "张"], "currency_rate": 21.0, "rate_note": "1 元 ≈ 21 日元（近似汇率，可在网页中实时调整）", "updated_at": "2026-07-31 14:30"}, "transactions": [{"id": 1, "date": "2026-07-31", "payer": "姜", "item": "日本签证", "amount_cny": 859.32, "shared": false, "category": "签证"}, {"id": 2, "date": "2026-07-31", "payer": "姜", "item": "天津 → 东京成田 机票", "amount_cny": 1134.0, "shared": false, "category": "交通"}, {"id": 3, "date": "2026-07-31", "payer": "姜", "item": "日本硬币夹", "amount_cny": 2.3, "shared": false, "category": "购物"}]};
+const A = DATA.meta.members[0], B = DATA.meta.members[1];
+let RATE = parseFloat(DATA.meta.currency_rate) || 21;
+let CUR = 'cny';
+let FILTER = 'all';
+function setFilter(el){
+  document.querySelectorAll('#memFilter button').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  FILTER = el.dataset.v;
+  render();
+}
+
+// 颜色板（类别）
+const PAL = ["#E60012","#1B2A4A","#C8A35B","#1B7A3D","#E8743B","#7B61FF","#0FA3B1","#D6336C"];
+const ICON = {交通:"🚄",住宿:"🏨",餐饮:"🍣",门票:"🎫",购物:"🛍️",签证:"📋",通讯:"📱",其他:"💴"};
+
+function fmt(v){
+  if(CUR==='cny') return '¥'+v.toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2});
+  return '¥'+(v*RATE).toLocaleString('zh-CN',{maximumFractionDigits:0});
+}
+function calc(tx){
+  let aPaid=0,bPaid=0,aCons=0,bCons=0,cat={};
+  tx.forEach(t=>{
+    const amt=+t.amount_cny, p=t.payer, sh=!!t.shared;
+    if(p===A)aPaid+=amt; else bPaid+=amt;
+    if(sh){aCons+=amt/2;bCons+=amt/2;} else { if(p===A)aCons+=amt; else bCons+=amt; }
+    cat[t.category||'其他']=(cat[t.category||'其他']||0)+amt;
+  });
+  return {aPaid,bPaid,aCons,bCons,cat,total:aPaid+bPaid,aNet:aPaid-aCons,bNet:bPaid-bCons};
+}
+
+function render(){
+  const s = calc(localTx());
+  document.getElementById('nameA').textContent=A;
+  document.getElementById('nameB').textContent=B;
+  document.getElementById('totalAmt').textContent=fmt(s.total);
+  document.getElementById('totalSub').textContent='约 '+fmt(s.total).replace('¥',CUR==='cny'?'¥':'¥')+'（折合日元 ¥'+(s.total*RATE).toLocaleString('zh-CN',{maximumFractionDigits:0})+'）';
+  document.getElementById('aPaid').textContent=fmt(s.aPaid);
+  document.getElementById('bPaid').textContent=fmt(s.bPaid);
+  document.getElementById('aCons').textContent=fmt(s.aCons);
+  document.getElementById('bCons').textContent=fmt(s.bCons);
+
+  // 圆环
+  const cats=Object.entries(s.cat).sort((a,b)=>b[1]-a[1]);
+  let acc=0, stops=[];
+  cats.forEach((c,i)=>{ const pct=c[1]/s.total*360; stops.push(PAL[i%PAL.length]+' '+acc+'deg '+(acc+pct)+'deg'); acc+=pct; });
+  const donut=document.getElementById('donut');
+  donut.style.background = cats.length? ('conic-gradient('+stops.join(',')+')') : '#ECE6DC';
+  document.getElementById('donutTotal').textContent=fmt(s.total);
+  const lg=document.getElementById('legend'); lg.innerHTML='';
+  cats.forEach((c,i)=>{
+    const d=document.createElement('div');
+    d.innerHTML='<span class="nm"><span class="dot" style="background:'+PAL[i%PAL.length]+'"></span>'+c[0]+'</span><span class="vl">'+fmt(c[1])+' · '+(c[1]/s.total*100).toFixed(0)+'%</span>';
+    lg.appendChild(d);
+  });
+
+  // 明细（成员筛选）
+  const list=document.getElementById('txList'); list.innerHTML='';
+  let rows=[...localTx()];
+  if(FILTER!=='all') rows=rows.filter(t=>t.payer===FILTER);
+  const sorted=rows.slice().sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);
+  const fTotal=rows.reduce((s,t)=>s+(+t.amount_cny),0);
+  if(!sorted.length){
+    list.innerHTML='<div class="empty">'+(FILTER==='all'?'还没有消费记录，点下方按钮记一笔～':'该成员暂无消费记录')+'</div>';
+  }
+  if(FILTER!=='all' && sorted.length){
+    const cap=document.createElement('div'); cap.className='txcap';
+    cap.innerHTML='<span>'+FILTER+' 共 '+rows.length+' 笔</span><b>'+fmt(fTotal)+'</b>';
+    list.appendChild(cap);
+  }
+  let curDay='';
+  sorted.forEach(t=>{
+    if(t.date!==curDay){
+      curDay=t.date;
+      const dd=document.createElement('div'); dd.className='tx';
+      dd.innerHTML='<div class="day">📅 '+t.date+'</div>';
+      list.appendChild(dd);
+    }
+    const who = t.payer===A?A:B;
+    const tag = t.shared?'<span class="tag aa">AA</span>':'<span class="tag solo">单人</span>';
+    const row=document.createElement('div'); row.className='tx';
+    row.innerHTML='<div class="item">'+
+      '<div class="ic">'+(ICON[t.category]||'💴')+'</div>'+
+      '<div class="mid"><div class="nm">'+t.item+tag+'</div>'+
+      '<div class="meta">'+t.category+' · '+who+'支付</div></div>'+
+      '<div class="amt"><b>'+fmt(+t.amount_cny)+'</b><div class="who">'+(t.shared?(A+'/'+B+' 各'+(t.amount_cny/2).toFixed(2)):who+'单人')+'</div></div>'+
+      '</div>';
+    list.appendChild(row);
+  });
+
+  // 结算
+  const st=document.getElementById('settle');
+  if(Math.abs(s.aNet)<0.005){
+    st.innerHTML='<div class="st">当前净额</div><div class="ok">✅ 已平账，双方无需结算</div>';
+  }else if(s.aNet>0){
+    st.innerHTML='<div class="st">'+B+' 多消费，需补偿 '+A+'</div>'+
+      '<div class="big">'+fmt(s.aNet)+'</div>'+
+      '<div class="arrow"><span class="pill from">'+B+' 支付</span>→<span class="pill to">'+A+' 收款</span></div>';
+  }else{
+    st.innerHTML='<div class="st">'+A+' 多消费，需补偿 '+B+'</div>'+
+      '<div class="big">'+fmt(-s.aNet)+'</div>'+
+      '<div class="arrow"><span class="pill from">'+A+' 支付</span>→<span class="pill to">'+B+' 收款</span></div>';
+  }
+
+  document.getElementById('rateNote').textContent='汇率说明：'+DATA.meta.rate_note+'　当前 1元 = '+RATE+'日元';
+}
+
+function setCur(c){
+  CUR=c;
+  document.getElementById('btnCny').classList.toggle('on',c==='cny');
+  document.getElementById('btnJpy').classList.toggle('on',c==='jpy');
+  render();
+}
+
+// ---- 本地临时记录 ----
+const KEY='jp_trip_tx_'+DATA.meta.trip;
+function localTx(){
+  try{const l=JSON.parse(localStorage.getItem(KEY)); if(Array.isArray(l)) return l;}catch(e){}
+  return JSON.parse(JSON.stringify(DATA.transactions));
+}
+function saveLocal(arr){localStorage.setItem(KEY,JSON.stringify(arr));}
+function resetLocal(){localStorage.removeItem(KEY);render();}
+
+function openSheet(){document.getElementById('mask').classList.add('show');document.getElementById('fDate').value=new Date().toISOString().slice(0,10);}
+function closeSheet(){document.getElementById('mask').classList.remove('show');}
+let picker={payer:A,share:'aa'};
+function seg(el,kind){
+  const seg=el.parentElement;
+  [...seg.children].forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  picker[kind]= el.dataset.v;
+}
+function addTx(){
+  const item=document.getElementById('fItem').value.trim();
+  const amt=parseFloat(document.getElementById('fAmt').value);
+  const date=document.getElementById('fDate').value;
+  const cat=document.getElementById('fCat').value;
+  if(!item||!(amt>0)||!date){alert('请填写项目、金额与日期');return;}
+  const arr=localTx();
+  const id=Math.max(0,...arr.map(t=>t.id))+1;
+  arr.push({id,date,payer:picker.payer,item,amount_cny:amt,shared:picker.share==='aa',category:cat});
+  saveLocal(arr); closeSheet();
+  document.getElementById('fItem').value='';document.getElementById('fAmt').value='';
+  render();
+}
+
+render();
+</script>
+</body>
+</html>

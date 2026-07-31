@@ -1,0 +1,38 @@
+{
+  "meta": {
+    "trip": "日本旅行",
+    "members": ["姜", "张"],
+    "currency_rate": 21.0,
+    "rate_note": "1 元 ≈ 21 日元（近似汇率，可在网页中实时调整）",
+    "updated_at": "2026-07-31 14:30"
+  },
+  "transactions": [
+    {
+      "id": 1,
+      "date": "2026-07-31",
+      "payer": "姜",
+      "item": "日本签证",
+      "amount_cny": 859.32,
+      "shared": false,
+      "category": "签证"
+    },
+    {
+      "id": 2,
+      "date": "2026-07-31",
+      "payer": "姜",
+      "item": "天津 → 东京成田 机票",
+      "amount_cny": 1134.00,
+      "shared": false,
+      "category": "交通"
+    },
+    {
+      "id": 3,
+      "date": "2026-07-31",
+      "payer": "姜",
+      "item": "日本硬币夹",
+      "amount_cny": 2.30,
+      "shared": false,
+      "category": "购物"
+    }
+  ]
+}
