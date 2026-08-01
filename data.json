@@ -4,7 +4,7 @@
     "members": ["姜", "张"],
     "currency_rate": 21.0,
     "rate_note": "1 元 ≈ 21 日元（近似汇率，可在网页中实时调整）",
-    "updated_at": "2026-07-31 14:30"
+    "updated_at": "2026-08-01 11:47"
   },
   "transactions": [
     {
@@ -33,6 +33,15 @@
       "amount_cny": 2.30,
       "shared": false,
       "category": "购物"
+    },
+    {
+      "id": 4,
+      "date": "2026-08-01",
+      "payer": "张",
+      "item": "换汇 RMB→日元（平分）",
+      "amount_cny": 2000.00,
+      "shared": true,
+      "category": "其他"
     }
   ]
 }
